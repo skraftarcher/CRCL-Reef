@@ -21,6 +21,11 @@
 # RStudio files
 .Rproj.user/
 
+#folders to ignore
+odata/
+wdata/
+data sheets/
+
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
