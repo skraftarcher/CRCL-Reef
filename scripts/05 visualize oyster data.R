@@ -9,8 +9,8 @@ library(DHARMa)
 theme_set(theme_bw()+theme(panel.grid = element_blank()))
 
 #load data
-oys.count<-crcl.trps.dr<-read_xlsx("odata/crcloyster.xlsx",sheet = 2)
-oys.size<-crcl.trps.dr<-read_xlsx("odata/crcloyster.xlsx",sheet = 3)
+oys.count<-crcl.trps.dr<-read_xlsx("odata/CRCL Oysters.xlsx",sheet = 2)
+oys.size<-crcl.trps.dr<-read_xlsx("odata/CRCL Oysters.xlsx",sheet = 3)
 
 #visualize oyster size data
 ggplot(data=oys.size)+
