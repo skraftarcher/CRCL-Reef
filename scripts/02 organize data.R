@@ -129,18 +129,18 @@ trp<-crcl.trps%>%
   mutate(length=as.numeric(length))
 
 # save a length dataset
-trp.lengths<-trp%>%
-  select(season,location,taxaID=taxa.verified,length)%>%
-  mutate(length=as.numeric(length))%>%
-  filter(!is.na(length))
-
-write.csv(trp.lengths,"wdata/trap lengths.csv",row.names = F)
-
 trp$parasites<-0
 trp$parasites[grep("paras",x=trp$notes)]<-1
 
 trp$eggs<-0
 trp$eggs[grep("egg",x=trp$notes)]<-1
+
+trp.lengths<-trp%>%
+  select(season,location,taxaID=taxa.verified,length, eggs, parasites)%>%
+  mutate(length=as.numeric(length))%>%
+  filter(!is.na(length))
+
+write.csv(trp.lengths,"wdata/trap lengths.csv",row.names = F)
 
 trp.abund<-trp%>%
   filter(taxa.verified!="NA")%>%
