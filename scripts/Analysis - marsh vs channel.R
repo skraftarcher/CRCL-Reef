@@ -35,7 +35,7 @@ crclenv<-wholedata[,1:9]
 crclcom.abd<-wholedata[,-1:-9]
 crclcom.abd<-crclcom.abd[,!colSums(crclcom.abd)==0]
 crclcom.abd<-crclcom.abd[,-grep(pattern="wtf",x=colnames(crclcom.abd))]
-#Taxa richness diff between marsh v channel/time
+#Taxa richness diff between marsh v channel/time----
 
 q1.taxr<-glmmTMB(spr~location*season,
                  data=wholedata,
