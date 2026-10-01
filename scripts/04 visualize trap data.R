@@ -44,7 +44,7 @@ ggplot(trap.env)+
   scale_fill_manual(values=c("#663390","#FF6600"))
 
 # look at shrimp size
-ggplot(data=trap.lengths)+
+ggplot(data=trap.lengths[trap.lengths$taxaID == "shmp-1",])+
   geom_density(aes(x=length,fill=location),alpha=.5)+
   facet_wrap(~season)
 
