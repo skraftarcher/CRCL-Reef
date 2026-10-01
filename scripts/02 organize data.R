@@ -8,6 +8,7 @@ source("scripts/install_packages_function.R")
 source("scripts/01 download data from drive.R")#the first time you run this you should select 1 and then log in to google drive
 2
 source("scripts/amphipod estimation study - data organization.R")
+source("scripts/fill.dw.func.R")
 lp("tidyverse")
 lp("readxl")
 lp("vegan")
@@ -15,7 +16,8 @@ lp("vegan")
 # load data----
 crcl.trps.dr<-read_xlsx("odata/CRCL Traps.xlsx",sheet = 2)
 crcl.trps<-read_xlsx("odata/CRCL Traps.xlsx",sheet = 3)
-crcl.trays<-read_xlsx("odata/CRCL Trays.xlsx",sheet = 3)
+crcl.trays<-read_xlsx("odata/CRCL Trays.xlsx",sheet = 3)|>
+  mutate(tray=paste0(tray,transect))
 mbon.trays<-read_xlsx("odata/MBON_Lab Biodiversity.xlsx",sheet=3)
 taxa<-read_xlsx("odata/MBON_Lab Biodiversity.xlsx",sheet=8)%>%
   select(OldTaxaID,taxaID,scientific)%>%
@@ -42,22 +44,48 @@ crcl.trays2.vouch<-crcl.trays%>%
 vouch.tax<-unique(crcl.trays2.vouch$taxaID)
 vouch.tax[!vouch.tax%in%unique(crcl.trays2.novouch$taxaID)]
 
-# some do and some don't. So for now we'll use abundance so can do only one dataset
-crcl.trays2<-crcl.trays%>%
+crcltax<-unique(crcl.trays$taxaID)
+
+crcl.trays<-crcl.trays%>%
   rename(OldTaxaID=taxaID)%>%
   left_join(taxa)%>%
+  mutate(bmass=ifelse(dry.weight<=tin.weight,0.001,dry.weight-tin.weight))
+
+# some do, but they obviously cannot be contributing much at this stage.
+# so for biomass-based calculations we'll get rid of them
+for(i in 1:length(crcltax)){
+  if(i==1)crcldat<-fill.dryweights(dset = crcl.trays,taxa=crcltax[i],idcol="taxaID")
+  if(i!=1)crcldat<-fill.dryweights(dset = crcldat,taxa=crcltax[i],idcol="taxaID")
+}
+
+
+crcl.trays2<-crcldat|>
+  mutate(bmass=ifelse(bmass<=0.001,0.001,bmass))|>
   group_by(lab.processor,date.retrieved,location,tray,taxaID)%>%
-  summarize(abund=sum(abundance))%>%
+  summarize(abund=sum(abundance),
+            bmass=sum(bmass))%>%
   mutate(location=case_when(
     location=="e"~"CRCL.edge",
     location=="o"~"CRCL.channel"))
 
+# start here - redo code to include biomass
+
 #now organize MBON trays and only keep what has been collected at LUMO3 or LUMO6 since September 2025
-mbon.trays2<-mbon.trays%>%
+mbon.trays<-mbon.trays%>%
   rename(OldTaxaID=taxaID)%>%
-  left_join(taxa)%>%
+  left_join(taxa)|>
+  mutate(bmass=dry.weight-tin.weight,
+         bmass=ifelse(bmass<=0.001,0.001,bmass))
+mbon.tax<-unique(mbon.trays$taxaID)
+for(i in 1:length(mbon.tax)){
+  if(i==1)mbon2<-fill.dryweights(dset = mbon.trays,taxa=mbon.tax[i],idcol="taxaID")
+  if(i!=1)mbon2<-fill.dryweights(dset = mbon2,taxa=mbon.tax[i],idcol="taxaID")
+}
+
+mbon.trays2<-mbon2|>
   group_by(lab.processor,date.retrieved,location=site,tray,taxaID)%>%
-  summarize(abund=sum(abundance))%>%
+  summarize(abund=sum(abundance),
+            bmass=sum(bmass))%>%
   filter(date.retrieved>="2025-09-01")%>%
   filter(location %in% c("LUMO3","LUMO6"))
 
@@ -97,16 +125,25 @@ combined.trays<-combined.trays[-grep(combined.trays$taxaID,pattern="egg"),]
   pivot_wider(names_from=deploy,values_from = n.remaining,values_fill = 6))
   
 # get a wide community dataset to save
-combined.wide<-combined.trays%>%
+combined.wide.abd<-combined.trays%>%
+  select(-bmass)|>
   pivot_wider(names_from=taxaID,values_from=abund,values_fill=0)
 
-com<-combined.wide[,-1:-5]
-env<-combined.wide[,1:5]
-env$spr<-specnumber(com)
-env$diversity<-diversity(com)
+combined.wide.bms<-combined.trays%>%
+  filter(!is.na(bmass))|>
+  select(-abund)|>
+  pivot_wider(names_from=taxaID,values_from=bmass,values_fill=0)
+
+com.abd<-combined.wide.abd[,-1:-5]
+com.bmass<-combined.wide.bms[,-1:-5]
+env<-combined.wide.abd[,1:5]
+env$spr<-specnumber(com.abd)
+env$diversity.abund<-diversity(com.abd)
+env$diversity.bmass<-diversity(com.bmass)
 
 # save these datasets
-write.csv(com,"wdata/community data.csv",row.names = F)
+write.csv(com.abd,"wdata/community data abundance.csv",row.names = F)
+write.csv(com.bmass,"wdata/community data biomass.csv",row.names = F)
 write.csv(env,"wdata/environment data.csv",row.names = F)
 
 # organize trap data----
