@@ -242,3 +242,17 @@ ggplot(contrasts, aes(x = season, y = Difference,group=Contrast)) +
   theme_minimal() +
   ylab("Difference")
 
+
+# multivariate comparison -abundance
+# still don't have enough MBON to include winter... 
+ab.per<-adonis2(mixcom.a~site*season,data=mixenv,permutations=9999)
+ab.per
+# interaction between location and season is significant
+# visualize community structure
+abmds<-metaMDS(mixcom.a)
+abscores<-scores(abmds,choices = c(1,2),display="sites")
+abenv2<-bind_cols(mixenv,abscores)
+ggplot(data=abenv2,aes(x=NMDS1,y=NMDS2,color=season,shape=site))+
+  geom_point()+
+  stat_ellipse()+
+  facet_wrap(~season)
