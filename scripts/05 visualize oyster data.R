@@ -14,17 +14,21 @@ oys.size<-crcl.trps.dr<-read_xlsx("odata/CRCL Oysters.xlsx",sheet = 3)
 
 #visualize oyster size data
 ggplot(data=oys.size)+
-  geom_density(aes(x=height,fill=position),alpha=.5)
+  geom_density(aes(x=height,fill=position),alpha=.5) +
+  facet_wrap(vars(season))
 
 ggplot(data=oys.size)+
-  geom_boxplot(aes(y=height,fill=position),alpha=.5)
+  geom_boxplot(aes(y=height,fill=position),alpha=.5) +
+  facet_wrap(vars(season))
 
 #visualize oyster count data
 ggplot(data=oys.count)+
-  geom_density(aes(x=live.oysters,fill=position),alpha=.5)
+  geom_density(aes(x=live.oysters,fill=position),alpha=.5) +
+  facet_wrap(vars(season))
 
 ggplot(data=oys.count)+
-  geom_boxplot(aes(y=live.oysters,fill=position),alpha=.5)
+  geom_boxplot(aes(y=live.oysters,fill=position),alpha=.5) +
+  facet_wrap(vars(season))
 
 # quick exploratory analysis
 glmm.resids<-function(model){
