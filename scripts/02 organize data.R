@@ -61,7 +61,7 @@ for(i in 1:length(crcltax)){
 
 crcl.trays2<-crcldat|>
   mutate(bmass=ifelse(bmass<=0.001,0.001,bmass))|>
-  group_by(lab.processor,date.retrieved,location,tray,taxaID)%>%
+  group_by(lab.processor,date.retrieved, season, location,tray,taxaID)%>%
   summarize(abund=sum(abundance),
             bmass=sum(bmass))%>%
   mutate(location=case_when(

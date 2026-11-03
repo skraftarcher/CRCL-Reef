@@ -9,7 +9,7 @@ theme_set(theme_bw()+theme(panel.grid = element_blank()))
 #load data----
 trap.com.cpue<-read.csv("wdata/trap community data cpue.csv")
 trap.env<-read.csv("wdata/trap env data.csv")
-trap.env$season<-factor(trap.env$season,levels=c("fall25","winter25","spring26","summer26"))
+trap.env$season<-factor(trap.env$season,levels=c("fall25","winter25","spring26","summer26", "fall26"))
 trap.lengths<-read.csv("wdata/trap lengths.csv")
 trap.lengths$season<-factor(trap.lengths$season,levels=c("fall25","winter25","spring26","summer26"))
 trap.pe<-read.csv("wdata/trap shrimp parasites and eggs.csv")
